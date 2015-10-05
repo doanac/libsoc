@@ -24,6 +24,11 @@ AC_ARG_WITH([board-configs],
     AS_HELP_STRING([--with-board-configs], [Install all board config files]))
 AM_CONDITIONAL([BOARD_CONFIGS], [test "x$with_board_configs" = xyes])
 
+AM_PATH_PYTHON(2.7)
+AC_ARG_ENABLE([python],
+    AS_HELP_STRING([--enable-python], [Enable python language bindings to libsoc API.]))
+AM_CONDITIONAL([PYTHON], [test "x$enable_python" != "xno"])
+
 AC_ARG_ENABLE([board],
     AS_HELP_STRING([--enable-board=BOARD], [Enable installation of board config]))
 
@@ -40,5 +45,5 @@ AM_CONDITIONAL([BOARD], [test "x$enable_board" != x])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-AC_CONFIG_FILES(Makefile lib/Makefile contrib/board_files/Makefile libsoc.pc)
+AC_CONFIG_FILES(Makefile lib/Makefile contrib/board_files/Makefile bindings/python/Makefile bindings/python/gpio.py libsoc.pc)
 AC_OUTPUT
