@@ -24,6 +24,32 @@ def test_wait_for_interrupt(gpio_in, gpio_out):
     gpio_in.wait_for_interrupt(1000)
 
 
+def test_interrupted(gpio_in, gpio_out):
+    def listener(gpio_in, event, handler, hits):
+        gpio_in._lib.libsoc_gpio_set_edge(gpio_in._gpio, gpio.EDGE_FALLING)
+        event.set()
+        # wait 1/10th of a second and create a falling interrupt
+        time.sleep(0.1)
+        for x in handler.interrupts():
+            hits[0] += 1
+
+    hits = [0]
+    gpio_out.set_low()
+    event = threading.Event()
+    with gpio_in.interrupt_handler() as h:
+        t = threading.Thread(target=listener, args=(gpio_in, event, h, hits))
+        t.start()
+        event.wait()
+        for x in range(10):
+            time.sleep(0.1)
+            gpio_out.set_high()
+            gpio_out.set_low()
+    time.sleep(0.1)
+    h.stop()
+    t.join()
+    print('Sent 10 interrupts, received: %d' % hits[0])
+
+
 def main(gpio_in, gpio_out):
     gpio_in = gpio.GPIO(gpio_in, gpio.DIRECTION_INPUT)
     gpio_out = gpio.GPIO(gpio_out, gpio.DIRECTION_OUTPUT)
@@ -53,7 +79,10 @@ def main(gpio_in, gpio_out):
             assert edge == gpio_in.get_edge()
 
         test_wait_for_interrupt(gpio_in, gpio_out)
+        test_interrupted(gpio_in, gpio_out)
 
+    gpio_in = gpio.GPIO(gpio_in.id, gpio.DIRECTION_INPUT,
+                        edge=gpio.EDGE_FALLING)
 
 if __name__ == '__main__':
     import os

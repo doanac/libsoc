@@ -2,7 +2,22 @@
 
 #include "libsoc_gpio.h"
 
+static PyObject *
+gpio_fd(PyObject *self, PyObject *args)
+{
+  unsigned long gpio_addr;
+  int fd;
+
+  if (PyArg_ParseTuple(args, "k", &gpio_addr))
+    {
+      return Py_BuildValue("i", ((gpio*)gpio_addr)->value_fd);
+    }
+  return NULL;
+}
+
 static PyMethodDef functions[] = {
+    {"gpio_fd", gpio_fd, METH_VARARGS,
+     "Runs the OS level file descriptor in the struct gpio"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
@@ -30,4 +45,3 @@ init_libsoc(void)
   PyModule_AddIntConstant(m, "LS_GREEDY", LS_GREEDY);
   PyModule_AddIntConstant(m, "LS_WEAK", LS_WEAK);
 }
-
